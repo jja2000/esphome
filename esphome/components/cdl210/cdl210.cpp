@@ -39,7 +39,7 @@ void CDL210Component::loop() {
 void CDL210Component::handle_char_(uint8_t c, std::string *s) {
   if (c == '\r')
     return;
-  if (c == '\n') {
+  if (c == '%') {
     std::string d(this->rx_message_.begin(), this->rx_message_.end());
     *s = d;
     this->rx_message_.clear();
