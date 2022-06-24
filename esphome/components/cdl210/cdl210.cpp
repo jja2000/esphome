@@ -13,7 +13,11 @@ void CDL210Component::update() {
 
 void CDL210Component::loop() {
   static bool started = false;
+  static uint8_t code = 0;
+  static uint32_t last_time = 0;
+
   while (this->available()) {
+    last_time = millis();
     uint8_t c;
     this->read_byte(&c);
     if (c == ' ') {
@@ -21,11 +25,15 @@ void CDL210Component::loop() {
       started = true;
       continue;
     }
-    if (!started)
+    if (!started) {
+      code = c;
       continue;
+    }
     this->rx_message_.push_back(c);
-    if (c == '%') {
-      started = false;
+  }
+  if (started && (last_time - millis() > 32)) {
+    started = false;
+    if (code == ':') {
       float temp, hum;
       int co2;
       std::string data(this->rx_message_.begin(), this->rx_message_.end());
@@ -39,6 +47,7 @@ void CDL210Component::loop() {
       if ((ret >= 3) && (this->humidity_sensor_ != nullptr))
         this->humidity_sensor_->publish_state(hum);
     }
+    code = 0;
   }
 }
 
